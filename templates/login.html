@@ -13,8 +13,13 @@
 {% block container %}
 
     <section class="login-page">
-      <h2>Zaloguj się</h2>
-      <form>
+        {% if message %}
+            <h2 style="color: red">{{ message }}</h2>
+        {% else %}
+          <h2>Zaloguj się</h2>
+        {% endif %}
+      <form action="{% url 'login' %}" method="POST">
+      {% csrf_token %}
         <div class="form-group">
             {% if email != '' %}
               <input type="email" name="email" value="{{ email }}" />
@@ -28,7 +33,7 @@
         </div>
 
         <div class="form-group form-group--buttons">
-          <a href="#" class="btn btn--without-border">Załóż konto</a>      
+          <a href="{% url 'register' %}" class="btn btn--without-border">Załóż konto</a>
           <button class="btn" type="submit">Zaloguj się</button> 
         </div>
       </form>

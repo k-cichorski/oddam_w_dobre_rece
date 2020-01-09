@@ -1,9 +1,11 @@
+from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.shortcuts import render, redirect
 from django.views import View
 from django.core.paginator import Paginator
 from Website.models import Donation, Institution, UserForm
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 
@@ -35,11 +37,30 @@ class AddDonation(View):
 
 class Login(View):
     def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('home')
+
         if request.session.get('email'):
             email = request.session['email']
         else:
             email = ''
         return render(request, 'login.html', {'email': email})
+
+    def post(self, request):
+        user = authenticate(request, username=request.POST['email'], password=request.POST['password'])
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            email = request.POST['email']
+            return render(request, 'login.html', {'message': 'Podany login i/lub hasło są nieprawidłowe!',
+                                                  'email': email})
+
+
+class Logout(View):
+    def get(self, request):
+        logout(request)
+        return redirect('home')
 
 
 class Register(View):
