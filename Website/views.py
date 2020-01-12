@@ -1,11 +1,11 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import IntegrityError
 from django.shortcuts import render, redirect
 from django.views import View
 from django.core.paginator import Paginator
 from Website.models import Donation, Institution, UserForm
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 
@@ -30,7 +30,9 @@ class LandingPage(View):
                                               'local_charities': local_charities})
 
 
-class AddDonation(View):
+class AddDonation(LoginRequiredMixin, View):
+    login_url = '/login/'
+
     def get(self, request):
         return render(request, 'form.html')
 
@@ -44,13 +46,22 @@ class Login(View):
             email = request.session['email']
         else:
             email = ''
-        return render(request, 'login.html', {'email': email})
+        if request.GET.get('next'):
+            valuenext = request.GET.get('next')
+        else:
+            valuenext = ''
+        return render(request, 'login.html', {'email': email, 'next': valuenext})
 
     def post(self, request):
         user = authenticate(request, username=request.POST['email'], password=request.POST['password'])
+        valuenext = request.POST.get('next')
+
         if user is not None:
             login(request, user)
-            return redirect('home')
+            if str(valuenext) != '':
+                return redirect('donate')
+            else:
+                return redirect('home')
         else:
             email = request.POST['email']
             return render(request, 'login.html', {'message': 'Podany login i/lub hasło są nieprawidłowe!',
