@@ -1,11 +1,15 @@
+import json
+
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import IntegrityError
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views import View
 from django.core.paginator import Paginator
-from Website.models import Donation, Institution, UserForm
+from Website.models import Donation, Institution, UserForm, Category
 from django.contrib.auth.models import User
+import json
 
 # Create your views here.
 
@@ -34,7 +38,9 @@ class AddDonation(LoginRequiredMixin, View):
     login_url = '/login/'
 
     def get(self, request):
-        return render(request, 'form.html')
+        categories = Category.objects.all()
+        institutions = Institution.objects.all()
+        return render(request, 'form.html', {'categories': categories, 'institutions': institutions})
 
 
 class Login(View):
@@ -118,3 +124,48 @@ class Register(View):
         else:
             return render(request, 'register.html', {'message': 'Powtórzone hasło nie pasuje do oryginalnego!',
                                                      'filled': filled})
+
+# ----------- AJAX views
+
+
+class AjaxGetOrganizations(View):
+    def post(self, request):
+        received_data = json.loads(request.body)
+        category_list = received_data['category_list']
+        organizations = Institution.objects.filter(categories__in=category_list).values('id', 'name', 'description')
+        organization_list_element = ''
+        for organization in organizations:
+            organization_list_element += f'''<div class="form-group form-group--checkbox">
+                  <label>
+                    <input type="radio" name="organization" value="{str(organization['id'])}" />
+                    <span class="checkbox radio"></span>
+                    <span class="description">
+                      <div class="title">{str(organization['name'])}</div>
+                      <div class="subtitle">
+                        Cel i misja: {str(organization['description'])}
+                      </div>
+                    </span>
+                  </label>
+                </div>'''
+        data = {'organization_list_element': organization_list_element}
+        return JsonResponse(data)
+
+
+class AjaxGetOrganizationsId(View):
+    def post(self, request):
+        received_data = json.loads(request.body)
+        category_list = received_data['category_list']
+        organizations = Institution.objects.filter(categories__in=category_list).values('id')
+        organizations_id = [element for element in organizations]
+        data = {'organizations_id': organizations_id}
+        return JsonResponse(data)
+
+
+# class AjaxGetOrganizations(View):
+#     def post(self, request):
+#         received_data = json.loads(request.body)
+#         category_list = received_data['category_list']
+#         organizations = Institution.objects.filter(categories__in=category_list).values('id', 'name', 'description',)
+#         organization_list = [entry for entry in organizations]
+#         data = {'organization_list': organization_list}
+#         return JsonResponse(data)

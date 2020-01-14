@@ -221,6 +221,50 @@ document.addEventListener("DOMContentLoaded", function() {
     updateForm() {
       this.$step.innerText = this.currentStep;
 
+      // AJAX get organizations matching selected categories
+      // if (this.currentStep == 2) {
+      //   let senderData = JSON.stringify({'category_list': categoryList});
+      //   let csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+      //   let organization_section = $('.step-3');
+      //   $.ajax({
+      //     headers: { "X-CSRFToken": csrftoken },
+      //     type: 'POST',
+      //     url: '/ajax/organizations/',
+      //     data: senderData,
+      //     dataType: 'text',
+      //     success: function (data) {
+      //       let response = JSON.parse(data);
+      //       let organization_list = response['organization_list_element'];
+      //       organization_section.html(organization_list);
+      //     }
+      //   });
+      // }
+      if (this.currentStep == 2) {
+        let senderData = JSON.stringify({'category_list': categoryList});
+        let csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
+        $.ajax({
+          headers: {"X-CSRFToken": csrftoken},
+          type: 'POST',
+          url: '/ajax/organizations/id/',
+          data: senderData,
+          dataType: 'text',
+          success: function (data) {
+            let response = JSON.parse(data);
+            let organizations_id_dict_list = response['organizations_id'];
+            console.log(organizations_id_dict_list);
+            $("input[name='organization']").each(function() {
+              console.log(this);
+              for (let item in organizations_id_dict_list) {
+                if ($(this).val() == organizations_id_dict_list[item]['id']) {
+                  console.log('match');
+                  $(this).closest('div').toggle();
+              }
+              }
+            })
+          }
+        });
+      }
+
       // TODO: Validation
 
       this.slides.forEach(slide => {
@@ -252,4 +296,24 @@ document.addEventListener("DOMContentLoaded", function() {
   if (form !== null) {
     new FormSteps(form);
   }
-});
+
+  // List of selected categories
+  var categoryList = [];
+  // $("input[name='categories']").click(function() {
+  //   if($(this).is(":checked")){
+  //         categoryList.push($(this).val());
+  //     }
+  //   else if($(this).is(":not(:checked)")){
+  //         categoryList.splice((categoryList.indexOf($(this).val(), 1)));
+  //     }
+  //   });
+
+  $("input[name='categories']").click(function() {
+    if($(this).is(":checked")){
+      categoryList.push($(this).val());
+      }
+    else if($(this).is(":not(:checked)")){
+          categoryList.splice((categoryList.indexOf($(this).val(), 1)));
+      }
+    });
+  });
