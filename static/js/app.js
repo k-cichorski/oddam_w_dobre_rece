@@ -221,24 +221,6 @@ document.addEventListener("DOMContentLoaded", function() {
     updateForm() {
       this.$step.innerText = this.currentStep;
 
-      // AJAX get organizations matching selected categories
-      // if (this.currentStep == 2) {
-      //   let senderData = JSON.stringify({'category_list': categoryList});
-      //   let csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
-      //   let organization_section = $('.step-3');
-      //   $.ajax({
-      //     headers: { "X-CSRFToken": csrftoken },
-      //     type: 'POST',
-      //     url: '/ajax/organizations/',
-      //     data: senderData,
-      //     dataType: 'text',
-      //     success: function (data) {
-      //       let response = JSON.parse(data);
-      //       let organization_list = response['organization_list_element'];
-      //       organization_section.html(organization_list);
-      //     }
-      //   });
-      // }
       if (this.currentStep == 2) {
         let senderData = JSON.stringify({'category_list': categoryList});
         let csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
@@ -299,15 +281,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // List of selected categories
   var categoryList = [];
-  // $("input[name='categories']").click(function() {
-  //   if($(this).is(":checked")){
-  //         categoryList.push($(this).val());
-  //     }
-  //   else if($(this).is(":not(:checked)")){
-  //         categoryList.splice((categoryList.indexOf($(this).val(), 1)));
-  //     }
-  //   });
-
   $("input[name='categories']").click(function() {
     if($(this).is(":checked")){
       categoryList.push($(this).val());
