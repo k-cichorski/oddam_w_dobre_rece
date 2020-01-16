@@ -128,29 +128,6 @@ class Register(View):
 # ----------- AJAX views
 
 
-class AjaxGetOrganizations(View):
-    def post(self, request):
-        received_data = json.loads(request.body)
-        category_list = received_data['category_list']
-        organizations = Institution.objects.filter(categories__in=category_list).values('id', 'name', 'description')
-        organization_list_element = ''
-        for organization in organizations:
-            organization_list_element += f'''<div class="form-group form-group--checkbox">
-                  <label>
-                    <input type="radio" name="organization" value="{str(organization['id'])}" />
-                    <span class="checkbox radio"></span>
-                    <span class="description">
-                      <div class="title">{str(organization['name'])}</div>
-                      <div class="subtitle">
-                        Cel i misja: {str(organization['description'])}
-                      </div>
-                    </span>
-                  </label>
-                </div>'''
-        data = {'organization_list_element': organization_list_element}
-        return JsonResponse(data)
-
-
 class AjaxGetOrganizationsId(View):
     def post(self, request):
         received_data = json.loads(request.body)
@@ -159,13 +136,3 @@ class AjaxGetOrganizationsId(View):
         organizations_id = [element for element in organizations]
         data = {'organizations_id': organizations_id}
         return JsonResponse(data)
-
-
-# class AjaxGetOrganizations(View):
-#     def post(self, request):
-#         received_data = json.loads(request.body)
-#         category_list = received_data['category_list']
-#         organizations = Institution.objects.filter(categories__in=category_list).values('id', 'name', 'description',)
-#         organization_list = [entry for entry in organizations]
-#         data = {'organization_list': organization_list}
-#         return JsonResponse(data)

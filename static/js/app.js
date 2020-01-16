@@ -221,6 +221,13 @@ document.addEventListener("DOMContentLoaded", function() {
     updateForm() {
       this.$step.innerText = this.currentStep;
 
+      if (this.currentStep == 1) {
+        $("input[name='organization']").each(function () {
+          $(this).closest('div').hide();
+        })
+      }
+
+      // Ajax -  get matching institutions
       if (this.currentStep == 2) {
         let senderData = JSON.stringify({'category_list': categoryList});
         let csrftoken = jQuery("[name=csrfmiddlewaretoken]").val();
@@ -233,18 +240,81 @@ document.addEventListener("DOMContentLoaded", function() {
           success: function (data) {
             let response = JSON.parse(data);
             let organizations_id_dict_list = response['organizations_id'];
-            console.log(organizations_id_dict_list);
             $("input[name='organization']").each(function() {
-              console.log(this);
               for (let item in organizations_id_dict_list) {
                 if ($(this).val() == organizations_id_dict_list[item]['id']) {
-                  console.log('match');
-                  $(this).closest('div').toggle();
-              }
+                  $(this).closest('div').show();
+                  break;
+                }
+                else {
+                    $(this).closest('div').hide();
+                }
               }
             })
           }
         });
+      }
+
+      if (this.currentStep == 5) {
+        let input_address = $("input[name='address']").val();
+        let input_city = $("input[name='city']").val();
+        let input_postcode = $("input[name='postcode']").val();
+        let input_phone = $("input[name='phone']").val();
+        let input_data = $("input[name='data']").val();
+        let input_time = $("input[name='time']").val();
+        let input_more_info = $("textarea[name='more_info']").val();
+
+        let address_ok = false;
+        let city_ok = false;
+        let postcode_ok = false;
+        let phone_ok = false;
+        let data_ok = false;
+        let time_ok = false;
+
+        $('.address--summary').text(input_address);
+        $('.city--summary').text(input_city);
+        $('.postcode--summary').text(input_postcode);
+        $('.phone--summary').text(input_phone);
+        $('.date--summary').text(input_data);
+        $('.time--summary').text(input_time);
+
+        if (input_address.length > 0) {
+          address_ok = true;
+        }
+
+        if (input_city.length > 0) {
+          city_ok = true;
+        }
+
+        if (input_postcode.length == 6) {
+          postcode_ok = true;
+        }
+
+        if (input_phone.length > 0) {
+          phone_ok = true;
+        }
+
+        if (input_data.length == 10) {
+          data_ok = true;
+        }
+
+        if (input_time.length != 0) {
+          time_ok = true;
+        }
+
+        if (input_more_info.length != 0) {
+          $('.more_info--summary').text(input_more_info);
+        }
+
+        if (address_ok && city_ok && postcode_ok && phone_ok && data_ok && time_ok) {
+          $('.btn-next-step5').text('Potwierdzam');
+          $('.btn-next-step5').prop('disabled', false);
+        }
+        else {
+          $('.btn-next-step5').text('Wypełnij poprawnie pola adresu i kontaktu z kroku 4!');
+          $('.btn-next-step5').prop('disabled', true);
+        }
+
       }
 
       // TODO: Validation
@@ -279,14 +349,40 @@ document.addEventListener("DOMContentLoaded", function() {
     new FormSteps(form);
   }
 
-  // List of selected categories
+  // Step 1 -  List of selected categories and next button enabling/disabling
   var categoryList = [];
   $("input[name='categories']").click(function() {
     if($(this).is(":checked")){
       categoryList.push($(this).val());
+      $('.btn-next-step1').prop('disabled', false);
       }
     else if($(this).is(":not(:checked)")){
           categoryList.splice((categoryList.indexOf($(this).val(), 1)));
+          $('.btn-next-step1').prop('disabled', true);
       }
     });
+
+  // Step 2 - validation
+  $("input[name='bags']").keyup(function () {
+    if ($(this).val() > 0 ) {
+      $('.btn-next-step2').prop('disabled', false);
+      let bags = 'Worki 60L: ' + $(this).val();
+      $('.summary--text.bags').text(bags);
+    }
+    else {
+      $('.btn-next-step2').prop('disabled', true);
+    }
+  });
+
+  // Step 3 - validation
+  $("input[name='organization']").click(function () {
+    if ($(this).is(":checked")) {
+      $('.btn-next-step3').prop('disabled', false);
+      let chosen_institution_name = $(this).siblings('.description').children('div .title').text();
+      $('.summary--text.institution').text('Dla: "' + chosen_institution_name + '"');
+    }
+  });
+
+  // Step 4 - validation
+
   });

@@ -86,7 +86,7 @@
               {% endfor %}
 
             <div class="form-group form-group--buttons">
-              <button type="button" class="btn next-step">Dalej</button>
+              <button type="button" class="btn next-step btn-next-step1" disabled>Dalej</button>
             </div>
           </div>
 
@@ -103,7 +103,7 @@
 
             <div class="form-group form-group--buttons">
               <button type="button" class="btn prev-step">Wstecz</button>
-              <button type="button" class="btn next-step">Dalej</button>
+              <button type="button" class="btn next-step btn-next-step2" disabled>Dalej</button>
             </div>
           </div>
 
@@ -114,7 +114,7 @@
             <h3>Wybierz organizację, której chcesz pomóc:</h3>
 
               {% for institution in institutions %}
-                <div class="form-group form-group--checkbox" hidden>
+                <div class="form-group form-group--checkbox">
                   <label>
                     <input type="radio" name="organization" value="{{ institution.id }}" />
                     <span class="checkbox radio"></span>
@@ -130,15 +130,15 @@
 
               <div class="form-group form-group--buttons">
                   <button type="button" class="btn prev-step">Wstecz</button>
-                  <button type="button" class="btn next-step">Dalej</button>
+                  <button type="button" class="btn next-step btn-next-step3" disabled>Dalej</button>
                 </div>
           </div>
 
           <!-- STEP 4 -->
           <div data-step="4">
-            <h3>Podaj adres oraz termin odbioru rzecz przez kuriera:</h3>
+            <h3>Podaj adres oraz termin odbioru rzeczy przez kuriera:</h3>
 
-            <div class="form-section form-section--columns">
+            <div class="form-section form-section--columns pickup--address">
               <div class="form-section--column">
                 <h4>Adres odbioru</h4>
                 <div class="form-group form-group--inline">
@@ -182,7 +182,7 @@
             </div>
             <div class="form-group form-group--buttons">
               <button type="button" class="btn prev-step">Wstecz</button>
-              <button type="button" class="btn next-step">Dalej</button>
+              <button type="button" class="btn next-step btn-next-step4">Dalej</button>
             </div>
           </div>
 
@@ -196,15 +196,15 @@
                 <ul>
                   <li>
                     <span class="icon icon-bag"></span>
-                    <span class="summary--text"
-                      >4 worki ubrań w dobrym stanie dla dzieci</span
+                    <span class="summary--text bags"
+                      ></span
                     >
                   </li>
 
                   <li>
                     <span class="icon icon-hand"></span>
-                    <span class="summary--text"
-                      >Dla fundacji "Mam marzenie" w Warszawie</span
+                    <span class="summary--text institution"
+                      ></span
                     >
                   </li>
                 </ul>
@@ -214,19 +214,19 @@
                 <div class="form-section--column">
                   <h4>Adres odbioru:</h4>
                   <ul>
-                    <li>Prosta 51</li>
-                    <li>Warszawa</li>
-                    <li>99-098</li>
-                    <li>123 456 789</li>
+                    <li class="address--summary">Prosta 51</li>
+                    <li class="city--summary">Warszawa</li>
+                    <li class="postcode--summary">99-098</li>
+                    <li class="phone--summary">123 456 789</li>
                   </ul>
                 </div>
 
                 <div class="form-section--column">
                   <h4>Termin odbioru:</h4>
                   <ul>
-                    <li>13/12/2018</li>
-                    <li>15:40</li>
-                    <li>Brak uwag</li>
+                    <li class="date--summary">13/12/2018</li>
+                    <li class="time--summary">15:40</li>
+                    <li class="more_info--summary">Brak uwag</li>
                   </ul>
                 </div>
               </div>
@@ -234,7 +234,7 @@
 
             <div class="form-group form-group--buttons">
               <button type="button" class="btn prev-step">Wstecz</button>
-              <button type="submit" class="btn">Potwierdzam</button>
+              <button type="submit" class="btn btn-next-step5" disabled>Potwierdzam</button>
             </div>
           </div>
         </form>
