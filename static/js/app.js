@@ -222,7 +222,7 @@ document.addEventListener("DOMContentLoaded", function() {
       this.$step.innerText = this.currentStep;
 
       if (this.currentStep == 1) {
-        $("input[name='organization']").each(function () {
+        $("input[name='institution']").each(function () {
           $(this).closest('div').hide();
         })
       }
@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", function() {
           success: function (data) {
             let response = JSON.parse(data);
             let organizations_id_dict_list = response['organizations_id'];
-            $("input[name='organization']").each(function() {
+            $("input[name='institution']").each(function() {
               for (let item in organizations_id_dict_list) {
                 if ($(this).val() == organizations_id_dict_list[item]['id']) {
                   $(this).closest('div').show();
@@ -258,25 +258,25 @@ document.addEventListener("DOMContentLoaded", function() {
       if (this.currentStep == 5) {
         let input_address = $("input[name='address']").val();
         let input_city = $("input[name='city']").val();
-        let input_postcode = $("input[name='postcode']").val();
-        let input_phone = $("input[name='phone']").val();
-        let input_data = $("input[name='data']").val();
-        let input_time = $("input[name='time']").val();
-        let input_more_info = $("textarea[name='more_info']").val();
+        let input_zip_code = $("input[name='zip_code']").val();
+        let input_phone_number = $("input[name='phone_number']").val();
+        let input_pick_up_date = $("input[name='pick_up_date']").val();
+        let input_pick_up_time = $("input[name='pick_up_time']").val();
+        let input_pick_up_comment = $("textarea[name='pick_up_comment']").text();
 
         let address_ok = false;
         let city_ok = false;
-        let postcode_ok = false;
-        let phone_ok = false;
-        let data_ok = false;
-        let time_ok = false;
+        let zip_code_ok = false;
+        let phone_number_ok = false;
+        let pick_up_date_ok = false;
+        let pick_up_time_ok = false;
 
         $('.address--summary').text(input_address);
         $('.city--summary').text(input_city);
-        $('.postcode--summary').text(input_postcode);
-        $('.phone--summary').text(input_phone);
-        $('.date--summary').text(input_data);
-        $('.time--summary').text(input_time);
+        $('.postcode--summary').text(input_zip_code);
+        $('.phone--summary').text(input_phone_number);
+        $('.date--summary').text(input_pick_up_date);
+        $('.time--summary').text(input_pick_up_time);
 
         if (input_address.length > 0) {
           address_ok = true;
@@ -286,27 +286,31 @@ document.addEventListener("DOMContentLoaded", function() {
           city_ok = true;
         }
 
-        if (input_postcode.length == 6) {
-          postcode_ok = true;
+        if (input_zip_code.length == 6) {
+          zip_code_ok = true;
         }
 
-        if (input_phone.length > 0) {
-          phone_ok = true;
+        if (input_phone_number.length > 0) {
+          phone_number_ok = true;
         }
 
-        if (input_data.length == 10) {
-          data_ok = true;
+        if (input_pick_up_date.length == 10) {
+          pick_up_date_ok = true;
         }
 
-        if (input_time.length != 0) {
-          time_ok = true;
+        if (input_pick_up_time.length != 0) {
+          pick_up_time_ok = true;
         }
 
-        if (input_more_info.length != 0) {
-          $('.more_info--summary').text(input_more_info);
+        if (input_pick_up_comment.length != 0) {
+          $('.more_info--summary').text(input_pick_up_comment);
+        }
+        else {
+          $("textarea[name='pick_up_comment']").text('Brak uwag');
+          $('.more_info--summary').text('Brak uwag');
         }
 
-        if (address_ok && city_ok && postcode_ok && phone_ok && data_ok && time_ok) {
+        if (address_ok && city_ok && zip_code_ok && phone_number_ok && pick_up_date_ok && pick_up_time_ok) {
           $('.btn-next-step5').text('Potwierdzam');
           $('.btn-next-step5').prop('disabled', false);
         }
@@ -339,7 +343,7 @@ document.addEventListener("DOMContentLoaded", function() {
      * TODO: validation, send data to server
      */
     submit(e) {
-      e.preventDefault();
+      // e.preventDefault();
       this.currentStep++;
       this.updateForm();
     }
@@ -360,10 +364,11 @@ document.addEventListener("DOMContentLoaded", function() {
           categoryList.splice((categoryList.indexOf($(this).val(), 1)));
           $('.btn-next-step1').prop('disabled', true);
       }
+    // $("input[name='chosen--categories']").val(categoryList);
     });
 
   // Step 2 - validation
-  $("input[name='bags']").keyup(function () {
+  $("input[name='quantity']").keyup(function () {
     if ($(this).val() > 0 ) {
       $('.btn-next-step2').prop('disabled', false);
       let bags = 'Worki 60L: ' + $(this).val();
@@ -375,14 +380,11 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   // Step 3 - validation
-  $("input[name='organization']").click(function () {
+  $("input[name='institution']").click(function () {
     if ($(this).is(":checked")) {
       $('.btn-next-step3').prop('disabled', false);
       let chosen_institution_name = $(this).siblings('.description').children('div .title').text();
       $('.summary--text.institution').text('Dla: "' + chosen_institution_name + '"');
     }
   });
-
-  // Step 4 - validation
-
   });

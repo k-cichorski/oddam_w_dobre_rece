@@ -7,7 +7,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views import View
 from django.core.paginator import Paginator
-from Website.models import Donation, Institution, UserForm, Category
+from Website.models import Donation, Institution, UserForm, Category, DonationForm
 from django.contrib.auth.models import User
 import json
 
@@ -41,6 +41,26 @@ class AddDonation(LoginRequiredMixin, View):
         categories = Category.objects.all()
         institutions = Institution.objects.all()
         return render(request, 'form.html', {'categories': categories, 'institutions': institutions})
+
+    def post(self, request):
+        new_donation_form = DonationForm(request.POST)
+        if new_donation_form.is_valid():
+            chosen_categories = list(request.POST['categories'])
+            categories = Category.objects.filter(id__in=chosen_categories)
+            institution = Institution.objects.get(id=request.POST['institution'])
+            new_donation = Donation.objects.create(quantity=request.POST['quantity'], institution=institution,
+                                                   address=request.POST['address'],
+                                                   phone_number=request.POST['phone_number'],
+                                                   city=request.POST['city'], zip_code=request.POST['zip_code'],
+                                                   pick_up_date=request.POST['pick_up_date'], pick_up_time=request.POST['pick_up_time'],
+                                                   pick_up_comment=request.POST['pick_up_comment'], user=request.user)
+            new_donation.categories.set(categories)
+
+            return render(request, 'form-confirmation.html', {'message': 'Dziękujemy za przesłanie formularza. '
+                                                                         'Na maila prześlemy wszelkie informacje o odbiorze.'})
+
+        else:
+            return render(request, 'form-confirmation.html', {'message': 'Coś poszło nie tak... Spróbuj jeszcze raz'})
 
 
 class Login(View):
@@ -124,6 +144,7 @@ class Register(View):
         else:
             return render(request, 'register.html', {'message': 'Powtórzone hasło nie pasuje do oryginalnego!',
                                                      'filled': filled})
+
 
 # ----------- AJAX views
 

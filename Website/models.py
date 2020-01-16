@@ -34,10 +34,16 @@ class Donation(models.Model):
     pick_up_date = models.DateField()
     pick_up_time = models.TimeField()
     pick_up_comment = models.TextField(null=True)
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, default=True)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
 
 
 class UserForm(ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email', 'password']
+
+
+class DonationForm(ModelForm):
+    class Meta:
+        model = Donation
+        exclude = ['user', 'institution', 'categories']
