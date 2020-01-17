@@ -102,7 +102,10 @@ class Logout(View):
 
 class Register(View):
     def get(self, request):
-        return render(request, 'register.html')
+        if request.user.is_authenticated:
+            return redirect('home')
+        else:
+            return render(request, 'register.html')
 
     def post(self, request):
 
@@ -144,6 +147,14 @@ class Register(View):
         else:
             return render(request, 'register.html', {'message': 'Powtórzone hasło nie pasuje do oryginalnego!',
                                                      'filled': filled})
+
+
+class UserProfile(LoginRequiredMixin, View):
+    login_url = '/login/'
+
+    def get(self, request):
+        user_donations = Donation.objects.filter(user=request.user)
+        return render(request, 'user-profile.html', {'donations': user_donations})
 
 
 # ----------- AJAX views
