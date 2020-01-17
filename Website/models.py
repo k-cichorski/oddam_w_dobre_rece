@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.db import models
 from django.contrib.auth.models import User
 from django.forms import ModelForm
@@ -6,10 +7,24 @@ from django.forms import ModelForm
 
 
 class Category(models.Model):
+    def __str__(self):
+        return self.name
+
     name = models.CharField(max_length=64)
+
+    class Meta:
+        verbose_name = 'Kategoria'
+        verbose_name_plural = 'Kategorie'
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    fields = ['name']
 
 
 class Institution(models.Model):
+    def __str__(self):
+        return self.name
 
     INSTITUTION_TYPE_CHOICES = (
         (1, 'fundacja'),
@@ -17,10 +32,19 @@ class Institution(models.Model):
         (3, 'zbiórka lolakna'),
     )
 
-    name = models.CharField(max_length=128)
-    description = models.TextField(null=True)
-    type = models.IntegerField(choices=INSTITUTION_TYPE_CHOICES, default=1)
-    categories = models.ManyToManyField(Category)
+    name = models.CharField(max_length=128, verbose_name='Nazwa')
+    description = models.TextField(null=True, verbose_name='Opis')
+    type = models.IntegerField(choices=INSTITUTION_TYPE_CHOICES, default=1, verbose_name='Rodzaj instytucji')
+    categories = models.ManyToManyField(Category, verbose_name='Kategorie')
+
+    class Meta:
+        verbose_name = 'Instytucja'
+        verbose_name_plural = 'Instytucje'
+
+
+@admin.register(Institution)
+class InstitutionAdmin(admin.ModelAdmin):
+    fields = ['name', 'description', 'type', 'categories']
 
 
 class Donation(models.Model):
