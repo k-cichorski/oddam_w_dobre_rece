@@ -1837,9 +1837,14 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-.donation--table {
+table, th, td {
   text-align: center;
-  margin-left: 170px;
+  font-size: 3.5rem;
+  font-weight: bold;
+  border: 1px solid #3c3c3c;
+  border-spacing: 0;
+  border-collapse: separate;
+  margin-left: 5.5em;
 }
 
 

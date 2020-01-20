@@ -14,41 +14,33 @@
     <div class="container">
         <div>
             <div class="slogan--item" style="align-items: center">
-                <h2>Imię:<br>{{ request.user.first_name }}</h2>
-                <h2>Nazwisko:<br>{{ request.user.last_name }}</h2>
+                <h2>Imię i nazwisko:<br>{{ request.user.first_name }} {{ request.user.last_name }}</h2>
                 <h2>Email:<br>{{ request.user.email }}</h2>
             </div>
         </div>
-        <h2>Przekazane dary:
-            <br><br>
-            <div class="donation--table">
-            <table>
+        <h2>Przekazane dary:</h2>
+            <div>
+            <table class="donation--table">
                 <tr>
-                    <td>Organizacja</td>
-                    <td>|</td>
-                    <td>Ilość worków</td>
-                    <td>|</td>
-                    <td>Data oddania/odbioru</td>
-                    <td>|</td>
-                    <td>Godzina</td>
+                    <th>Organizacja</th>
+                    <th>Ilość worków</th>
+                    <th>Data odbioru</th>
+                    <th>Godzina</th>
+                    <th>Status</th>
                 </tr>
-                <tr></tr>
-                <tr></tr>
                 {% for donation in donations %}
                     <tr class="donation--table--header">
                         <td>{{donation.institution.name}}</td>
-                        <td></td>
                         <td>{{donation.quantity}}</td>
-                        <td></td>
                         <td>{{donation.pick_up_date}}</td>
-                        <td></td>
                         <td>{{donation.pick_up_time}}</td>
+                        {% if donation.picked_up %}<td style="color: greenyellow">Odebrano{% else %}<td style="color: red">Oczekuje{% endif %}</td>
                     </tr>
                     <tr></tr>
                 {% endfor %}
             </table>
             </div>
-        </h2>
+            <h2></h2>
     </div>
 
 {% endblock %}

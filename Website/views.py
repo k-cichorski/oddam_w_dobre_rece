@@ -153,7 +153,7 @@ class UserProfile(LoginRequiredMixin, View):
     login_url = '/login/'
 
     def get(self, request):
-        user_donations = Donation.objects.filter(user=request.user)
+        user_donations = Donation.objects.filter(user=request.user).order_by('picked_up')
         return render(request, 'user-profile.html', {'donations': user_donations})
 
 

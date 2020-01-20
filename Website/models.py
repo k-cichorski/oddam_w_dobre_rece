@@ -26,6 +26,10 @@ class Institution(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        verbose_name = 'Instytucja'
+        verbose_name_plural = 'Instytucje'
+
     INSTITUTION_TYPE_CHOICES = (
         (1, 'fundacja'),
         (2, 'organizacja pozarządowa'),
@@ -37,10 +41,6 @@ class Institution(models.Model):
     type = models.IntegerField(choices=INSTITUTION_TYPE_CHOICES, default=1, verbose_name='Rodzaj instytucji')
     categories = models.ManyToManyField(Category, verbose_name='Kategorie')
 
-    class Meta:
-        verbose_name = 'Instytucja'
-        verbose_name_plural = 'Instytucje'
-
 
 @admin.register(Institution)
 class InstitutionAdmin(admin.ModelAdmin):
@@ -48,9 +48,16 @@ class InstitutionAdmin(admin.ModelAdmin):
 
 
 class Donation(models.Model):
+    def __str__(self):
+        return self.user.username + ' ' + str(self.pick_up_date)
+
+    class Meta:
+        verbose_name = 'Dotacja'
+        verbose_name_plural = 'Dotacje'
+
     quantity = models.IntegerField()
     categories = models.ManyToManyField(Category)
-    institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
+    institution = models.ForeignKey(Institution, on_delete=models.DO_NOTHING)
     address = models.CharField(max_length=64)
     phone_number = models.CharField(max_length=20)
     city = models.CharField(max_length=64)
@@ -58,7 +65,14 @@ class Donation(models.Model):
     pick_up_date = models.DateField()
     pick_up_time = models.TimeField()
     pick_up_comment = models.TextField(null=True)
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True)
+    picked_up = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+
+
+@admin.register(Donation)
+class DonationAdmin(admin.ModelAdmin):
+    fields = ['quantity', 'categories', 'institution', 'address', 'phone_number', 'city', 'zip_code', 'pick_up_date',
+              'pick_up_time', 'pick_up_comment', 'picked_up', 'user']
 
 
 class UserForm(ModelForm):
