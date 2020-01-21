@@ -1,6 +1,6 @@
 import json
 
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import IntegrityError
 from django.http import JsonResponse
@@ -45,7 +45,7 @@ class AddDonation(LoginRequiredMixin, View):
     def post(self, request):
         new_donation_form = DonationForm(request.POST)
         if new_donation_form.is_valid():
-            chosen_categories = list(request.POST['categories'])
+            chosen_categories = request.POST.getlist('categories')
             categories = Category.objects.filter(id__in=chosen_categories)
             institution = Institution.objects.get(id=request.POST['institution'])
             new_donation = Donation.objects.create(quantity=request.POST['quantity'], institution=institution,
@@ -113,17 +113,7 @@ class Register(View):
                   'email': request.POST['email']}
         request_password = request.POST['password']
 
-        password_has_capital_char = False
-        password_contains_num = False
-        for char in request_password:
-            if char in '1234567890':
-                password_contains_num = True
-
-            if char.isupper():
-                password_has_capital_char = True
-
-        if request_password == request.POST['password2'] and len(request_password) >= 5 and password_contains_num and \
-                password_has_capital_char:
+        if request_password == request.POST['password2'] and validate_password(request_password):
             new_user_form = UserForm(request.POST)
             request.session['email'] = request.POST['email']
 
@@ -140,13 +130,44 @@ class Register(View):
                 return render(request, 'register.html',
                               {'message': 'Podaj poprawny adres e-mail!', 'filled': filled})
 
-        elif len(request_password) < 5 or not password_has_capital_char or not password_contains_num:
+        elif validate_password(request_password) is False:
             return render(request, 'register.html',
                           {'message': 'Hasło zbyt łatwe ( min. pięć znaków, w tym jedna cyfra i jedna wielka litera )!',
                            'filled': filled})
         else:
             return render(request, 'register.html', {'message': 'Powtórzone hasło nie pasuje do oryginalnego!',
                                                      'filled': filled})
+
+
+class ChangePassword(LoginRequiredMixin, View):
+    login_url = '/login/'
+
+    def get(self, request):
+        return render(request, 'change-password.html')
+
+    def post(self, request):
+        user = User.objects.get(username=request.user.username)
+        old_password = request.POST['old_password']
+        if user.check_password(old_password) is False:
+            message = 'Stare hasło jest niepoprawne!'
+
+        else:
+            new_password = request.POST['new_password']
+            re_new_password = request.POST['re_new_password']
+
+            if new_password == re_new_password and validate_password(new_password):
+                user.set_password(new_password)
+                user.save()
+                update_session_auth_hash(request, user)
+                return render(request, 'change-password.html', {'success': 'Hasło zostało zmienione!'})
+
+            elif new_password != re_new_password:
+                message = 'Powtórzone hasło nie pasuje do oryginalnego!'
+
+            else:
+                message = 'Hasło zbyt łatwe ( min. pięć znaków, w tym jedna cyfra i jedna wielka litera )!'
+
+        return render(request, 'change-password.html', {'message': message})
 
 
 class UserProfile(LoginRequiredMixin, View):
@@ -168,3 +189,21 @@ class AjaxGetOrganizationsId(View):
         organizations_id = [element for element in organizations]
         data = {'organizations_id': organizations_id}
         return JsonResponse(data)
+
+
+# ------------ Functions
+
+def validate_password(password):
+    password_has_capital_char = False
+    password_contains_num = False
+    for char in password:
+        if char in '1234567890':
+            password_contains_num = True
+
+        if char.isupper():
+            password_has_capital_char = True
+
+    if password_contains_num and password_has_capital_char and len(password) >= 5:
+        return True
+    else:
+        return False

@@ -361,10 +361,12 @@ document.addEventListener("DOMContentLoaded", function() {
       $('.btn-next-step1').prop('disabled', false);
       }
     else if($(this).is(":not(:checked)")){
-          categoryList.splice((categoryList.indexOf($(this).val(), 1)));
+          for (let i=0; i < categoryList.length; i++) {
+            if (categoryList[i] == $(this).val())
+            categoryList.splice(i, 1);
+          }
           $('.btn-next-step1').prop('disabled', true);
       }
-    // $("input[name='chosen--categories']").val(categoryList);
     });
 
   // Step 2 - validation

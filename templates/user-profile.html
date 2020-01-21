@@ -1,7 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Profil użytkownika{% endblock %}
-{% include 'header-menu.html' %}
 
 {% block header %}
     <header>
@@ -19,27 +18,26 @@
             </div>
         </div>
         <h2>Przekazane dary:</h2>
-            <div>
             <table class="donation--table">
                 <tr>
                     <th>Organizacja</th>
                     <th>Ilość worków</th>
+                    <th>Zawartość</th>
                     <th>Data odbioru</th>
                     <th>Godzina</th>
                     <th>Status</th>
                 </tr>
                 {% for donation in donations %}
                     <tr class="donation--table--header">
-                        <td>{{donation.institution.name}}</td>
+                        <td><a href="donation/{{ donation.id }}">{{donation.institution.name}}</a></td>
                         <td>{{donation.quantity}}</td>
+                        <td>{% for category in donation.categories.all %}{{ category.name }}, {% endfor %}</td>
                         <td>{{donation.pick_up_date}}</td>
                         <td>{{donation.pick_up_time}}</td>
                         {% if donation.picked_up %}<td style="color: greenyellow">Odebrano{% else %}<td style="color: red">Oczekuje{% endif %}</td>
                     </tr>
-                    <tr></tr>
                 {% endfor %}
             </table>
-            </div>
             <h2></h2>
     </div>
 
