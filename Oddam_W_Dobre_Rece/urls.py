@@ -15,7 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, re_path
-from Website.views import LandingPage, AddDonation, Login, Logout, Register, AjaxGetOrganizationsId, UserProfile, ChangePassword
+from Website.views import LandingPage, AddDonation, Login, Logout, Register, AjaxGetOrganizationsId, UserProfile,\
+    ProfileSettings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,5 +27,5 @@ urlpatterns = [
     re_path(r'^register/$(?i)', Register.as_view(), name='register'),
     path('ajax/organizations/id/', AjaxGetOrganizationsId.as_view()),
     re_path(r'^profile/$(?i)', UserProfile.as_view(), name='profile'),
-    re_path(r'^change_password/$(?i)', ChangePassword.as_view(), name='change-password'),
+    re_path(r'^change_password/$(?i)', ProfileSettings.as_view(), name='profile-settings'),
 ]

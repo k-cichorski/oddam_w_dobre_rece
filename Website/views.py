@@ -24,7 +24,7 @@ class LandingPage(View):
         # paginator_non_gov_org = Paginator(non_gov_org, 5)
         # paginator_local_charities = Paginator(local_charities, 5)
 
-        donations = Donation.objects.all()
+        donations = Donation.objects.filter(picked_up=True)
         donated_bags = 0
         for donation in donations:
             donated_bags += donation.quantity
@@ -139,35 +139,60 @@ class Register(View):
                                                      'filled': filled})
 
 
-class ChangePassword(LoginRequiredMixin, View):
+class ProfileSettings(LoginRequiredMixin, View):
     login_url = '/login/'
 
     def get(self, request):
-        return render(request, 'change-password.html')
+        return render(request, 'profile-settings.html')
 
     def post(self, request):
         user = User.objects.get(username=request.user.username)
-        old_password = request.POST['old_password']
-        if user.check_password(old_password) is False:
-            message = 'Stare hasło jest niepoprawne!'
+        if 'new_info' in request.POST:
+            if user.check_password(request.POST['password']) is False:
+                info_message = 'Wpisz poprawne hasło!'
+                return render(request, 'profile-settings.html', {'info_message': info_message})
+            else:
+                new_first_name = request.POST['new_first_name']
+                new_last_name = request.POST['new_last_name']
+                new_email = request.POST['new_email']
 
-        else:
-            new_password = request.POST['new_password']
-            re_new_password = request.POST['re_new_password']
-
-            if new_password == re_new_password and validate_password(new_password):
-                user.set_password(new_password)
+                if len(new_first_name) > 0:
+                    user.first_name = new_first_name
+                if len(new_last_name) > 0:
+                    user.last_name = new_last_name
+                if len(new_email) > 0:
+                    if user.email == new_email:
+                        info_message = 'Ten adres e-mail jest już zajęty!'
+                        return render(request, 'profile-settings.html', {'info_message': info_message})
+                    else:
+                        user.email = new_email
+                        user.username = new_email
                 user.save()
-                update_session_auth_hash(request, user)
-                return render(request, 'change-password.html', {'success': 'Hasło zostało zmienione!'})
+                success_message = 'Dane zostały zmienione!'
 
-            elif new_password != re_new_password:
-                message = 'Powtórzone hasło nie pasuje do oryginalnego!'
+                return render(request, 'profile-settings.html', {'success_message': success_message})
+        else:
+            old_password = request.POST['old_password']
+            if user.check_password(old_password) is False:
+                message = 'Stare hasło jest niepoprawne!'
 
             else:
-                message = 'Hasło zbyt łatwe ( min. pięć znaków, w tym jedna cyfra i jedna wielka litera )!'
+                new_password = request.POST['new_password']
+                re_new_password = request.POST['re_new_password']
 
-        return render(request, 'change-password.html', {'message': message})
+                if new_password == re_new_password and validate_password(new_password):
+                    user.set_password(new_password)
+                    user.save()
+                    update_session_auth_hash(request, user)
+                    return render(request, 'profile-settings.html', {'success': 'Hasło zostało zmienione!'})
+
+                elif new_password != re_new_password:
+                    message = 'Powtórzone hasło nie pasuje do oryginalnego!'
+
+                else:
+                    message = 'Hasło zbyt łatwe ( min. pięć znaków, w tym jedna cyfra i jedna wielka litera )!'
+
+            return render(request, 'profile-settings.html', {'message': message})
 
 
 class UserProfile(LoginRequiredMixin, View):
@@ -185,7 +210,9 @@ class AjaxGetOrganizationsId(View):
     def post(self, request):
         received_data = json.loads(request.body)
         category_list = received_data['category_list']
-        organizations = Institution.objects.filter(categories__in=category_list).values('id')
+        organizations = Institution.objects.all()
+        for category in category_list:
+            organizations = organizations.filter(categories__id=category).values('id')
         organizations_id = [element for element in organizations]
         data = {'organizations_id': organizations_id}
         return JsonResponse(data)

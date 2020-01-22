@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Ustawienia{% endblock %}
+
+{% block header %}
+    <header>{% include 'header-menu.html' %}</header>
+{% endblock %}
+
+{% block container %}
+
+    {% if info_message %}
+        <h2 style="color: red">{{ info_message }}
+    {% elif success_message %}<h2 style="color: greenyellow">{{ success_message }}
+        {% else %}<h2>Zmień dane{% endif %}</h2>
+
+    <form name="change-info" action="{% url 'profile-settings' %}" method="post">
+        {% csrf_token %}
+        <ul style="list-style-type: none">
+            <li><label>Nowe imię:</label>
+            <input type="text" name="new_first_name"></li>
+            <li><label>Nowe nazwisko:</label>
+            <input type="text" name="new_last_name"></li>
+            <li><label>Nowy adres e-mail:</label>
+            <input type="text" name="new_email"></li>
+            <li><label>Wpisz hasło:</label>
+            <input type="password" name="password"></li>
+            <input type="submit" value="Zmień dane" name="new_info"/>
+        </ul>
+    </form>
+
+    {% if message %}
+        <h2 style="color: red">{{ message }}</h2>
+    {% elif success %}
+        <h2 style="color: greenyellow">{{ success }}</h2>
+    {% else %}
+        <h2>Zmień hasło</h2>
+    {% endif %}
+
+    <form name="change-password" action="{% url 'profile-settings' %}" method="post">
+        {% csrf_token %}
+        <ul style="list-style-type: none">
+            <li><label>Stare hasło:</label>
+            <input type="password" name="old_password"/></li>
+
+            <li><label>Nowe hasło:</label>
+            <input type="password" name="new_password"/></li>
+
+            <li><label>Powtórz nowe hasło:</label>
+            <input type="password" name="re_new_password"/></li>
+            <input type="submit" value="Zmień hasło"/>
+        </ul>
+    </form>
+
+{% endblock %}
