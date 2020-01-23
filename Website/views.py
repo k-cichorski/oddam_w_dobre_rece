@@ -79,7 +79,7 @@ class Login(View):
         return render(request, 'login.html', {'email': email, 'next': valuenext})
 
     def post(self, request):
-        user = authenticate(request, username=request.POST['email'], password=request.POST['password'])
+        user = authenticate(request, username=request.POST['email'].casefold(), password=request.POST['password'])
         valuenext = request.POST.get('next')
 
         if user is not None:
@@ -110,17 +110,19 @@ class Register(View):
     def post(self, request):
 
         filled = {'first_name': request.POST['first_name'], 'last_name': request.POST['last_name'],
-                  'email': request.POST['email']}
+                  'email': request.POST['email'].casefold()}
         request_password = request.POST['password']
 
         if request_password == request.POST['password2'] and validate_password(request_password):
             new_user_form = UserForm(request.POST)
-            request.session['email'] = request.POST['email']
+            request.session['email'] = request.POST['email'].casefold()
 
             if new_user_form.is_valid():
                 try:
-                    User.objects.create_user(username=request.POST['email'], email=request.POST['email'],
-                                             password=request.POST['password'], first_name=request.POST['first_name'],
+                    User.objects.create_user(username=request.POST['email'].casefold(),
+                                             email=request.POST['email'].casefold(),
+                                             password=request.POST['password'],
+                                             first_name=request.POST['first_name'],
                                              last_name=request.POST['last_name'])
                 except IntegrityError:
                     return render(request, 'register.html',
@@ -161,16 +163,20 @@ class ProfileSettings(LoginRequiredMixin, View):
                 if len(new_last_name) > 0:
                     user.last_name = new_last_name
                 if len(new_email) > 0:
-                    if user.email == new_email:
+                    if user.email.casefold() == new_email.casefold():
                         info_message = 'Ten adres e-mail jest już zajęty!'
                         return render(request, 'profile-settings.html', {'info_message': info_message})
                     else:
                         user.email = new_email
                         user.username = new_email
-                user.save()
-                success_message = 'Dane zostały zmienione!'
-
-                return render(request, 'profile-settings.html', {'success_message': success_message})
+                try:
+                    user.save()
+                except IntegrityError:
+                    info_message = 'Ten adres e-mail jest już zajęty!'
+                    return render(request, 'profile-settings.html', {'info_message': info_message})
+                else:
+                    success_message = 'Dane zostały zmienione!'
+                    return render(request, 'profile-settings.html', {'success_message': success_message})
         else:
             old_password = request.POST['old_password']
             if user.check_password(old_password) is False:

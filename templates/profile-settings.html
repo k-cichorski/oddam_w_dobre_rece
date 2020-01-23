@@ -13,20 +13,22 @@
     {% elif success_message %}<h2 style="color: greenyellow">{{ success_message }}
         {% else %}<h2>Zmień dane{% endif %}</h2>
 
-    <form name="change-info" action="{% url 'profile-settings' %}" method="post">
-        {% csrf_token %}
-        <ul style="list-style-type: none">
-            <li><label>Nowe imię:</label>
-            <input type="text" name="new_first_name"></li>
-            <li><label>Nowe nazwisko:</label>
-            <input type="text" name="new_last_name"></li>
-            <li><label>Nowy adres e-mail:</label>
-            <input type="text" name="new_email"></li>
-            <li><label>Wpisz hasło:</label>
-            <input type="password" name="password"></li>
-            <input type="submit" value="Zmień dane" name="new_info"/>
-        </ul>
-    </form>
+    <div class="change--info--container">
+        <form name="change-info" action="{% url 'profile-settings' %}" method="post">
+            {% csrf_token %}
+            <ul style="list-style-type: none">
+                <li><label>Nowe imię:</label>
+                <input type="text" name="new_first_name" class="settings--input"/></li>
+                <li><label>Nowe nazwisko:</label>
+                <input type="text" name="new_last_name" class="settings--input"/></li>
+                <li><label>Nowy adres e-mail:</label>
+                <input type="text" name="new_email" class="settings--input"/></li>
+                <li><label>Wpisz hasło:</label>
+                <input type="password" name="password" class="settings--input"/></li>
+                <input class="btn change--info--btn" type="submit" value="Zmień dane" name="new_info"/>
+            </ul>
+        </form>
+    </div>
 
     {% if message %}
         <h2 style="color: red">{{ message }}</h2>
@@ -36,19 +38,21 @@
         <h2>Zmień hasło</h2>
     {% endif %}
 
-    <form name="change-password" action="{% url 'profile-settings' %}" method="post">
-        {% csrf_token %}
-        <ul style="list-style-type: none">
-            <li><label>Stare hasło:</label>
-            <input type="password" name="old_password"/></li>
+    <div class="change--info--container">
+        <form name="change-password" action="{% url 'profile-settings' %}" method="post">
+            {% csrf_token %}
+            <ul style="list-style-type: none">
+                <li><label>Stare hasło:</label>
+                <input type="password" name="old_password" class="settings--input"/></li>
 
-            <li><label>Nowe hasło:</label>
-            <input type="password" name="new_password"/></li>
+                <li><label>Nowe hasło:</label>
+                <input type="password" name="new_password" class="settings--input"/></li>
 
-            <li><label>Powtórz nowe hasło:</label>
-            <input type="password" name="re_new_password"/></li>
-            <input type="submit" value="Zmień hasło"/>
-        </ul>
-    </form>
+                <li><label>Powtórz nowe hasło:</label>
+                <input type="password" name="re_new_password" class="settings--input"/></li>
+                <input class="btn change--password--btn" type="submit" value="Zmień hasło"/>
+            </ul>
+        </form>
+    </div>
 
 {% endblock %}
