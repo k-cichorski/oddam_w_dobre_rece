@@ -1,13 +1,16 @@
 import json
+import secrets
 
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views import View
 from django.core.paginator import Paginator
-from Website.models import Donation, Institution, UserForm, Category, DonationForm
+from Website.models import Donation, Institution, UserForm, Category, DonationForm, EmailVerification
+from Oddam_W_Dobre_Rece import settings
 from django.contrib.auth.models import User
 import json
 
@@ -109,25 +112,38 @@ class Register(View):
 
     def post(self, request):
 
+        registration_email = request.POST['email'].casefold()
+
         filled = {'first_name': request.POST['first_name'], 'last_name': request.POST['last_name'],
-                  'email': request.POST['email'].casefold()}
+                  'email': registration_email}
         request_password = request.POST['password']
 
         if request_password == request.POST['password2'] and validate_password(request_password):
             new_user_form = UserForm(request.POST)
-            request.session['email'] = request.POST['email'].casefold()
+            request.session['email'] = registration_email
 
             if new_user_form.is_valid():
                 try:
-                    User.objects.create_user(username=request.POST['email'].casefold(),
-                                             email=request.POST['email'].casefold(),
-                                             password=request.POST['password'],
-                                             first_name=request.POST['first_name'],
-                                             last_name=request.POST['last_name'])
+                    new_user = User.objects.create_user(username=registration_email,
+                                                        email=registration_email,
+                                                        password=request.POST['password'],
+                                                        first_name=request.POST['first_name'],
+                                                        last_name=request.POST['last_name'],
+                                                        is_active=False)
                 except IntegrityError:
                     return render(request, 'register.html',
                                   {'message': 'Użytkownik z takim adresem e-mail już istnieje!', 'filled': filled})
-                return redirect('login')
+
+                new_token = secrets.token_urlsafe(32)
+                EmailVerification.objects.create(user=new_user, token=new_token)
+                subject = 'Link weryfikacyjny do serwisu Oddam W Dobre Ręce'
+                message = f'''Aby dokończyć rejestrację konta, kliknij w poniższy link:
+                http://127.0.0.1:8000/token/{new_token}'''
+                email_from = settings.EMAIL_HOST_USER
+                recipient_list = [registration_email,]
+                send_mail(subject, message, email_from, recipient_list)
+                return render(request, 'login.html', {'message': 'Kliknij w link wysłany w wiadomości email,'
+                                                                 ' aby potwierdzić rejestrację i umożliwić logowanie'})
             else:
                 return render(request, 'register.html',
                               {'message': 'Podaj poprawny adres e-mail!', 'filled': filled})
@@ -139,6 +155,13 @@ class Register(View):
         else:
             return render(request, 'register.html', {'message': 'Powtórzone hasło nie pasuje do oryginalnego!',
                                                      'filled': filled})
+
+
+def ActivateAccount(request, token):
+    new_user = EmailVerification.objects.get(token=token).user
+    new_user.is_active = True
+    new_user.save()
+    return render(request, 'login.html', {'message': 'Twoje konto zostało zweryfikwoane, możesz się zalogować'})
 
 
 class ProfileSettings(LoginRequiredMixin, View):
@@ -240,3 +263,4 @@ def validate_password(password):
         return True
     else:
         return False
+
