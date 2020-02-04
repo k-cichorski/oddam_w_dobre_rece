@@ -74,6 +74,11 @@ class EmailVerification(models.Model):
     token = models.TextField()
 
 
+class PasswordRetrieval(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    token = models.TextField()
+
+
 @admin.register(Donation)
 class DonationAdmin(admin.ModelAdmin):
     fields = ['quantity', 'categories', 'institution', 'address', 'phone_number', 'city', 'zip_code', 'pick_up_date',

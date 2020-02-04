@@ -9,9 +9,10 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.views import View
 from django.core.paginator import Paginator
-from Website.models import Donation, Institution, UserForm, Category, DonationForm, EmailVerification
+from Website.models import Donation, Institution, UserForm, Category, DonationForm, EmailVerification, PasswordRetrieval
 from Oddam_W_Dobre_Rece import settings
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 import json
 
 # Create your views here.
@@ -71,15 +72,11 @@ class Login(View):
         if request.user.is_authenticated:
             return redirect('home')
 
-        if request.session.get('email'):
-            email = request.session['email']
-        else:
-            email = ''
         if request.GET.get('next'):
             valuenext = request.GET.get('next')
         else:
             valuenext = ''
-        return render(request, 'login.html', {'email': email, 'next': valuenext})
+        return render(request, 'login.html', {'next': valuenext})
 
     def post(self, request):
         user = authenticate(request, username=request.POST['email'].casefold(), password=request.POST['password'])
@@ -92,9 +89,7 @@ class Login(View):
             else:
                 return redirect('home')
         else:
-            email = request.POST['email']
-            return render(request, 'login.html', {'message': 'Podany login i/lub hasło są nieprawidłowe!',
-                                                  'email': email})
+            return render(request, 'login.html', {'message': 'Podany login i/lub hasło są nieprawidłowe!'})
 
 
 class Logout(View):
@@ -138,7 +133,7 @@ class Register(View):
                 EmailVerification.objects.create(user=new_user, token=new_token)
                 subject = 'Link weryfikacyjny do serwisu Oddam W Dobre Ręce'
                 message = f'''Aby dokończyć rejestrację konta, kliknij w poniższy link:
-                http://127.0.0.1:8000/token/{new_token}'''
+                http://127.0.0.1:8000/verify/{new_token}'''
                 email_from = settings.EMAIL_HOST_USER
                 recipient_list = [registration_email,]
                 send_mail(subject, message, email_from, recipient_list)
@@ -158,10 +153,16 @@ class Register(View):
 
 
 def ActivateAccount(request, token):
-    new_user = EmailVerification.objects.get(token=token).user
-    new_user.is_active = True
-    new_user.save()
-    return render(request, 'login.html', {'message': 'Twoje konto zostało zweryfikwoane, możesz się zalogować'})
+    try:
+        new_user = EmailVerification.objects.get(token=token).user
+    except ObjectDoesNotExist:
+        return redirect('home')
+    else:
+        new_user.is_active = True
+        new_user.save()
+        EmailVerification.objects.get(token=token).delete()
+        return render(request, 'login.html', {'message': 'Twoje konto zostało zweryfikwoane, możesz się zalogować',
+                                          'email': new_user.email})
 
 
 class ProfileSettings(LoginRequiredMixin, View):
@@ -230,6 +231,48 @@ class UserProfile(LoginRequiredMixin, View):
     def get(self, request):
         user_donations = Donation.objects.filter(user=request.user).order_by('picked_up')
         return render(request, 'user-profile.html', {'donations': user_donations})
+
+
+class ForgotPassword(View):
+    def get(self, request):
+        return render(request, 'forgot-password.html')
+
+    def post(self, request):
+        email = request.POST['email'].casefold()
+        troubled_user = User.objects.get(email=email)
+        new_token = secrets.token_urlsafe(32)
+        PasswordRetrieval.objects.create(user=troubled_user, token=new_token)
+        subject = 'Link resetujący hasło do portalu Oddam W Dobre Ręce'
+        message = f'''Aby zresetować hasło, kliknij w poniższy link:
+                        http://127.0.0.1:8000/reset_password/{new_token}'''
+        email_from = settings.EMAIL_HOST_USER
+        recipient_list = [email, ]
+        send_mail(subject, message, email_from, recipient_list)
+        return render(request, 'forgot-password.html', {'message': 'Jeśli Twój email jest w naszej bazie, '
+                                                                   'zostanie na niego wysłany link do resetowania hasła'})
+
+
+class ResetPassword(View):
+    def get(self, request, token):
+        try:
+            PasswordRetrieval.objects.get(token=token)
+        except ObjectDoesNotExist:
+            return redirect('home')
+        else:
+            return render(request, 'reset-password.html', {'token': token})
+
+    def post(self, request, token):
+        troubled_user = PasswordRetrieval.objects.get(token=token).user
+        new_password = request.POST['password']
+
+        if new_password == request.POST['password2'] and validate_password(new_password):
+            troubled_user.set_password(new_password)
+            troubled_user.save()
+            PasswordRetrieval.objects.get(token=token).delete()
+            return render(request, 'login.html', {'message': 'Hasło zostało zmienione, możesz się zalogować'})
+        else:
+            return render(request, 'reset-password.html', {'message_err': 'Hasła muszą być identyczne, zawierać wielką literę i min. 5 znaków'})
+
 
 
 # ----------- AJAX views

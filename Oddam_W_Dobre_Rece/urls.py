@@ -16,7 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path
 from Website.views import LandingPage, AddDonation, Login, Logout, Register, AjaxGetOrganizationsId, UserProfile,\
-    ProfileSettings, ActivateAccount
+    ProfileSettings, ActivateAccount, ForgotPassword, ResetPassword
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,5 +28,7 @@ urlpatterns = [
     path('ajax/organizations/id/', AjaxGetOrganizationsId.as_view()),
     re_path(r'^profile/$(?i)', UserProfile.as_view(), name='profile'),
     re_path(r'^change_password/$(?i)', ProfileSettings.as_view(), name='profile-settings'),
-    path('token/<str:token>/', ActivateAccount),
+    path('verify/<str:token>/', ActivateAccount),
+    re_path(r'^forgot_password/$(?i)', ForgotPassword.as_view(), name='forgot-password'),
+    path('reset_password/<str:token>/', ResetPassword.as_view(), name='reset-password'),
 ]
